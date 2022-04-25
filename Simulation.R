@@ -1,4 +1,4 @@
-source("AllTheFunctions_sparse.R")
+source("Functions.R")
 
 
 #Set parameter
