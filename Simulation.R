@@ -1,17 +1,19 @@
-source("Functions.R")
 
 
 #Set parameter
 p<-10 #number of nodes
-n<-20 #sample size
+n<-100 #sample size
 d<-10 #max in degree (to be used only for general DAGs)
 thres<-0.05 #Threshold for algorithms PT and TP.
-k<-10 #number of repetitions 
+k<-100 #number of repetitions 
 
-#Vector containing the (mean) statistics for the algorithms, in order Corrected oriented edges, wrongly oriented edges, missing edges, extra edges and False discovery rate
-S_p<-S_pt<-S_tp<-matrix(0,nrow=1,ncol=5)
-#Runtime
-T_p<-T_pt<-T_tp<-0
+
+#Matrix containing the (mean) statistics for the algorithms, in order Corrected oriented edges,
+#wrongly oriented edges, missing edges, extra edges, False discovery rate and runtime (in seconds)
+A<-matrix(0,nrow=5,ncol=6)
+colnames(A)<-c("correct","wrong","extra","missing","FDR","time")
+row.names(A)<-c("P","PT","TP","ANM","LiNGAM")
+
 
 for(i in c(1:k)){
   #Polytree Generation, comment if you want to test the algorithm on a general DAG
@@ -58,16 +60,16 @@ for(i in c(1:k)){
   w<--abs(as.vector(C[t(upper.tri(C))]))                              #Vector of weights 
   g_full<-make_full_graph(p)       
   m_new<-mst(g_full,w)                                                #skeleton 
-  E_n<-get.edgelist(m_new)                                            #List of unoriented edges
+  E_n<-get.edgelist(m_new)                                            #List of estimated unoriented edges
   end_time<-Sys.time()
-  time<-end_time-start_time                                           #Chow-Liu runtime
+  time<-difftime(end_time,start_time,unit="secs")                                          #Chow-Liu runtime
   
   #PAIRWISE
   start_time<-Sys.time()
-  Ip<-Oneedgeordering_third_fourth_cum(x,S,E_n)                       #Adjacency matrix 
+  Ip<-Oneedgeordering_third_fourth_cum(x,S,E_n)                       #Pairwise Adjacency matrix 
   end_time<-Sys.time()
-  S_p<-S_p+as(diff_stat(Ip,Itestdirected),"numeric")/k                #Pairwise Statistic vector
-  T_p<-time+(end_time-start_time)/k                                   #Pairwise Runtime
+  A["P",-6]<-A["P",-6]+as(diff_stat(Ip,Itestdirected),"numeric")/k                #Pairwise Statistic vector
+  A["P",6]<-A["P",6]+time+difftime(end_time,start_time,unit="secs")/k                                   #Pairwise Runtime
   
   #PT
   start_time<-Sys.time()
@@ -77,16 +79,32 @@ for(i in c(1:k)){
   Olist<-LIST$Olist
   
   Olist1<-RecursiveOneEdge_third_fourth_cum(x,S,Ulist,Olist)
-  Itp<-edgelist_toadjmatrix(Olist1)                                   #Adjacency matrix
+  Itp<-edgelist_toadjmatrix(Olist1)                                   #PT Adjacency matrix
   end_time<-Sys.time()
-  S_pt<-S_pt+as(diff_stat(Itp,Itestdirected),"numeric")/k             #PT Statistic vector
-  T_pt<-time+(end_time-start_time)/k                                  #PT runtime
+  A["PT",-6]<-A["PT",-6]+as(diff_stat(Itp,Itestdirected),"numeric")/k             #PT Statistic vector
+  A["PT",6]<-A["PT",6]+time+difftime(end_time,start_time,unit="secs")/k                                  #PT runtime
   
   #TP
   start_time<-Sys.time()
   Olistpt<-tmomcor_third_fourth_cum(x,C,S,E_n,thres)
-  Ipt<-edgelist_toadjmatrix(Olistpt)                                  #Adjacency matrix
+  Ipt<-edgelist_toadjmatrix(Olistpt)                                  #TP Adjacency matrix
   end_time<-Sys.time() 
-  S_tp<-S_tp+as(diff_stat(Ipt,Itestdirected),"numeric")/k             #TP Statistic vector
-  T_tp<-time+(end_time-start_time)/k                                  #TP runtime
+  A["TP",-6]<-A["TP",-6]+as(diff_stat(Ipt,Itestdirected),"numeric")/k             #TP Statistic vector
+  A["TP",6]<-A["TP",6]+time+difftime(end_time,start_time,unit="secs")/k                                  #TP runtime
+  
+  #ANM
+  start_time<-Sys.time()
+  Ianm<-Oneedgeordering_anm(x,S,E_n)                                    #ANM Adjacency matrix 
+  end_time<-Sys.time()
+  A["ANM",-6]<-A["ANM",-6]+as(diff_stat(Ianm,Itestdirected),"numeric")/k            #ANM Statistic vector
+  A["ANM",6]<-A["ANM",6]+difftime(end_time,start_time,unit="secs")/k     
+  
+  #LINGAM
+  start_time<-Sys.time()
+  Ilingam<-((t(lingam(x)$Bpruned))>0)*1                                 #LiNGAM Adjacency matrix
+  end_time<-Sys.time()
+  A["LiNGAM",-6]<-A["LiNGAM",-6]+as(diff_stat(Ilingam,Itestdirected),"numeric")/k   #LiNGAM STATISTICS
+  A["LiNGAM",6]<-A["LiNGAM",6]+difftime(end_time,start_time,unit="secs")/k
 }
+
+
