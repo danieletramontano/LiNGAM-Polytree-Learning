@@ -101,7 +101,7 @@ for(i in c(1:k)){
   
   #LINGAM
   start_time<-Sys.time()
-  Ilingam<-((t(lingam(x)$Bpruned))>0)*1                                 #LiNGAM Adjacency matrix
+  Ilingam<-((t(lingam(x)$Bpruned))!=0)*1                                 #LiNGAM Adjacency matrix
   end_time<-Sys.time()
   A["LiNGAM",-6]<-A["LiNGAM",-6]+as(diff_stat(Ilingam,Itestdirected),"numeric")/k   #LiNGAM STATISTICS
   A["LiNGAM",6]<-A["LiNGAM",6]+difftime(end_time,start_time,unit="secs")/k
