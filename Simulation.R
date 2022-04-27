@@ -1,4 +1,4 @@
-
+source("Functions.R")
 
 #Set parameter
 p<-10 #number of nodes
