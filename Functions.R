@@ -367,8 +367,8 @@ RecursiveOneEdge_third_fourth_cum<-function(x,S,E,O){
         else{
           E<-E[-l,]
           for(i in c(1:(length(E_o)/2))){
-              O<-rbind(O,E_o[i,])
-              TOUSE<-rbind(TOUSE,E_o[i,])
+            O<-rbind(O,E_o[i,])
+            TOUSE<-rbind(TOUSE,E_o[i,])
           }
         }
       }
@@ -601,8 +601,12 @@ diff_stat<-function(Ie,It){
   I<-Ie-It
   wrong<-sum(I>0)-extra
   correct<-sum(Ie>0)-extra-wrong
-  fdr<-(wrong+extra)/(wrong+extra+correct)
+  if((wrong+extra+correct)==0){
+    fdr=0
+  }
+  else{
+    fdr<-(wrong+extra)/(wrong+extra+correct)
+  }
   L<-list(CORRECT=correct,WRONG=wrong,MISSING=missing,EXTRA=extra,FDR=fdr)
   return(L)
 }
-
