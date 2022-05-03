@@ -11,7 +11,7 @@ k<-100 #number of repetitions
 #Matrix containing the (mean) statistics for the algorithms, in order Corrected oriented edges,
 #wrongly oriented edges, missing edges, extra edges, False discovery rate and runtime (in seconds)
 A<-matrix(0,nrow=5,ncol=6)
-colnames(A)<-c("correct","wrong","extra","missing","FDR","time")
+colnames(A)<-c("correct","wrong","missing","extra","FDR","time")
 row.names(A)<-c("P","PT","TP","ANM","LiNGAM")
 
 
